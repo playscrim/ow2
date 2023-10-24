@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    command: python main.py
+    volumes:
+      - .:/home/python
+  api:
+    build: .
+    restart: always
+    command: python server.py
+    volumes:
+      - .:/home/python
+    ports:
+      - "8000:8000"
+    links:
+      - "mysql:mysql"
+  mysql:
+    build: .docker/mysql
+    environment:
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - ./.docker/data:/lib/mysql
+    ports:
+      - "3306:3306"

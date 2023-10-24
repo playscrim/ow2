@@ -7,23 +7,33 @@ class BattleNetOAuth:
   """Used to make requests to the Battle.net API
   """
   BASE_URL = 'https://us.battle.net/oauth'
+  BASE_QUERY = {
+    'redirect_uri': 'http://localhost:8000/callback',
+    'scope': 'openid',
+  }
 
-  def __init__(self) -> None:
-    self.query = {
-      'redirect_uri': 'http://localhost:8000/callback',
-      'scope': 'openid',
-    }
+  def __init__(self, client_id, secret) -> None:
+    self.__client_id = client_id
+    self.__secret = secret
+    
+  def _build_query(self, **kwargs):
+    query = dict(kwargs, **self.BASE_QUERY)
+    return urllib.parse.urlencode(query)
+
+  def _build_url(self, endpoint, query = None):
+    has_query = f'?{query}' if query else ''
+    return f'{self.BASE_URL}/{endpoint}{has_query}'
 
   def get_authorization(self, user_id):
     authorization = {
-      'client_id': 'f17e58b5a41e4688a74e5d0b10f3312f',
+      'client_id': self.__client_id,
       'state': user_id,
       'response_type': 'code'
     }
 
-    params = dict(authorization, **self.query)
+    query = self._build_query(**authorization)
 
-    return f'{self.BASE_URL}/authorize?{urllib.parse.urlencode(params)}'
+    return self._build_url('authorize', query)
   
   def get_access_token(self, allow_code):
     access = {
@@ -31,13 +41,14 @@ class BattleNetOAuth:
       'code': allow_code
     }
 
-    client_id = 'f17e58b5a41e4688a74e5d0b10f3312f'
-    secret = 'P4cYNDzr8KW5O4rHG2r4VYZWHeXtz1Y1'
-
-    params = dict(access, **self.query)
-    url = f'{self.BASE_URL}/token'
+    query = self._build_query(**access)
+    url = self._build_url('token')
     
-    response = requests.post(url, params=params, auth=HTTPBasicAuth(client_id, secret))
+    response = requests.post(
+      url, 
+      params=query, 
+      auth=HTTPBasicAuth(self.__client_id, self.__secret)
+    )
 
     return response.json()['access_token']
 
@@ -46,4 +57,7 @@ class BattleNetOAuth:
       'Authorization': f'Bearer {access_token}'
     }
 
-    return requests.get(f'{self.BASE_URL}/userinfo', headers=headers).content
+    url = self._build_url('userinfo')
+    response = requests.get(url, headers=headers)
+
+    return response.json()['battletag']
