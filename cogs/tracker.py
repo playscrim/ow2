@@ -32,7 +32,7 @@ class Tracker(commands.Cog):
     # GET https://ow-api.com/v1/stats/:platform/:region/:battletag/profile
     await interaction.response.send_message('')
 
-  def setup(client):
-    """Setup function to add cog to client
-    """
-    client.add_cog(Tracker(client))
+def setup(client):
+  """Setup function to add cog to client
+  """
+  client.add_cog(Tracker(client))
