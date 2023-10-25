@@ -1,9 +1,39 @@
 import nextcord
 
 from nextcord.ext import commands
-from nextcord.abc import GuildChannel
+from nextcord import Interaction, SlashOption
 
-from nextcord import Interaction, ChannelType, SlashOption
+embed = nextcord.Embed(
+  description='<a:loading:1165474674222829648> Waiting for players',
+  color=nextcord.Colour.blurple()
+)
+
+class MatchManager:
+  """Manage a match and its players
+  """
+  def __init__(self) -> None:
+    self.players_limit = {
+      'tank': 2,
+      'offense': 4,
+      'support': 4
+    }
+
+    self.role_players = {
+      'tank': [],
+      'offense': [],
+      'support': []
+    }
+
+  def add_player(self, role: str, user_id: str):
+    players = self.role_players[role]
+    player_limit = self.players_limit[role]
+
+    if len(players) <= player_limit:
+      self.role_players[role].append(user_id)
+
+  def remove_player(self, role: str, user_id: str):
+    players = self.role_players[role]
+    self.role_players[role] = list(filter(lambda p: p != user_id, players))
 
 class JoinButton(nextcord.ui.View):
   """UI Buttons to setup the role
@@ -22,7 +52,7 @@ class JoinButton(nextcord.ui.View):
     interaction: Interaction
   ):
     await interaction.response.edit_message(content=f'{interaction.user}')
-    await interaction.response.send_message('Joined as Tank', ephemeral=True)
+    await interaction.followup.send('Joined as Tank', ephemeral=True)
 
   @nextcord.ui.button(
     label='Join as DPS',
@@ -35,7 +65,7 @@ class JoinButton(nextcord.ui.View):
     interaction: Interaction
   ):
     await interaction.response.edit_message(content=f'{interaction.user}')
-    await interaction.response.send_message('Joined as DPS', ephemeral=True)
+    await interaction.followup.send('Joined as DPS', ephemeral=True)
 
   @nextcord.ui.button(
     label='Join as Sup',
@@ -48,7 +78,7 @@ class JoinButton(nextcord.ui.View):
     interaction: Interaction
   ):
     await interaction.response.edit_message(content=f'{interaction.user}')
-    await interaction.response.send_message('Joined as sup', ephemeral=True)
+    await interaction.followup.send('Joined as sup', ephemeral=True)
 
   @nextcord.ui.button(
     label='Cancel Match', 
@@ -62,7 +92,7 @@ class JoinButton(nextcord.ui.View):
     await interaction.message.delete()
     await interaction.response.send_message('Match canceled', ephemeral=True)
 
-class CreateMatchModal(nextcord.ui.Modal):
+class MatchModal(nextcord.ui.Modal):
   """UI Modal to setup our match
   """
   def __init__(self, client, channel_id: str) -> None:
@@ -82,11 +112,6 @@ class CreateMatchModal(nextcord.ui.Modal):
     self.add_item(self.name)
 
   async def callback(self, interaction: Interaction):
-    embed = nextcord.Embed(
-      description='<a:loading:1165474674222829648> Waiting for players',
-      color=nextcord.Colour.blurple()
-    )
-
     join_button = JoinButton()
 
     await interaction.response.send_message(
@@ -117,11 +142,12 @@ class Match(commands.Cog):
     map_pool = SlashOption(
       name='map_pool',
       description='Toggle map pick and ban',
-      choices=['Enabled', 'Disabled']
+      choices=['Enabled', 'Disabled'],
+      required=False
     )
   ):
-    create_match_modal = CreateMatchModal(self.client, '1165476045424705666') # queue channel
-    await interaction.response.send_modal(create_match_modal)
+    match_modal = MatchModal(self.client, 1165476045424705666) # queue channel
+    await interaction.response.send_modal(match_modal)
 
 def setup(client):
   """Setup function to add cog to client
