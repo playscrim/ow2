@@ -1,6 +1,7 @@
 import nextcord
-import requests
+
 from datetime import datetime
+from ..services.overwatch import OverwatchService
 
 from nextcord.ext import commands
 from nextcord import Interaction, SlashOption
@@ -8,8 +9,9 @@ from nextcord import Interaction, SlashOption
 class Tracker(commands.Cog):
   """Tracker related commands
   """
-  def __init__(self, client) -> None:
+  def __init__(self, client, overwatch: OverwatchService) -> None:
     self.client = client
+    self.__overwatch = overwatch
 
   @nextcord.slash_command(
     name="tracker", 
@@ -28,55 +30,56 @@ class Tracker(commands.Cog):
       description='Enter user battletag to get user stats'
     )
   ):
-    """ Creating user request for player stats
-        Validation status code response from API
+    """Get player stats
     """
-    response = requests.get(f"https://ow-api.com/v1/stats/{platform}/us/{battletag.replace('#', '-')}/profile")
-    data = response.json()
+    status_code, data = self.__overwatch.get_profile(platform, battletag)
 
     author = interaction.user.mention
-    if response.status_code == 404:
-      await interaction.response.send_message(f"{author} - User {battletag} not found, please try again!")
-      return
+
+    if status_code == 404:
+      return await interaction.response.send_message(f'{author}\nUser {battletag} not found, please try again!')
   
-    competitive_stats = data["competitiveStats"]
-    matchs = competitive_stats["games"]
-    played = matchs["played"]
-    won = matchs["won"]
-    ratings = data["ratings"]
+    competitive_stats = data['competitiveStats']
+    matchs = competitive_stats['games']
+
+    played = matchs['played']
+    won = matchs['won']
+    lost = played - won
+
+    ratings = data['ratings']
     thumbnail = data['icon']
 
     description = []
-    for i in ratings:
-      elo = i["group"]
-      role = i["role"]
-      tier = i["tier"]
 
-      message = f"{role}: {elo} {tier}"
+    for rating in ratings:
+      rank = rating['group']
+      role = rating['role']
+      tier = rating['tier']
+
+      message = f'{role}: {rank} {tier}'
       description.append(message)
+
     d_message = '\n'.join(description)
 
     embed = nextcord.Embed(
       title=battletag,
       description=d_message,
-      timestamp=datetime.utcnow()
-    )
-
-    embed.set_footer(
-      text="https://playscrim.com"
+      timestamp=datetime.utcnow(),
+      color=nextcord.Colour.blurple()
     )
 
     embed.add_field(
-      name="Matchs:",
-      value=f"Played: {played}\nWon: {won}"
+      name='Matchs:',
+      value=f'Played: {played}\nWon: {won}\nLost: {lost}'
     )
 
-    embed.set_thumbnail(
-      url=thumbnail
-    )
+    embed.set_footer(text='https://playscrim.com')
+    embed.set_thumbnail(url=thumbnail)
+
     await interaction.response.send_message(embeds=[embed])
 
 def setup(client):
   """Setup function to add cog to client
   """
-  client.add_cog(Tracker(client))
+  overwatch = OverwatchService()
+  client.add_cog(Tracker(client, overwatch))

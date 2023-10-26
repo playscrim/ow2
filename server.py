@@ -27,6 +27,10 @@ user_service = UserService()
 def index():
   return oauth.get_authorization(432354788219420683)
 
+@app.route('/user/<int:user_id>')
+def get_user_by_id(user_id):
+  return user_service.find_one(user_id)
+
 @app.route('/callback')
 def callback():
   allow_code = request.args.get('code')
