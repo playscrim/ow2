@@ -1,7 +1,7 @@
 import nextcord
 
 from datetime import datetime
-from ..services.overwatch import OverwatchService
+from services.overwatch import OverwatchService
 
 from nextcord.ext import commands
 from nextcord import Interaction, SlashOption
