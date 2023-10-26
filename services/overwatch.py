@@ -1,7 +1,9 @@
 import requests
 
 class OverwatchService:
-  def __sanitize_battletag(battletag: str):
+  def __sanitize_battletag(self, battletag: str):
+    """Replace the default battletag format with the used by the API
+    """
     return battletag.replace('#', '-')
 
   def get_profile(self, platform: str, battletag: str):
