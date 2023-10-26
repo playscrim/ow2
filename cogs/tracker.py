@@ -33,11 +33,25 @@ class Tracker(commands.Cog):
     """Get player stats
     """
     status_code, data = self.__overwatch.get_profile(platform, battletag)
-
     author = interaction.user.mention
 
+    embed_private = nextcord.Embed(
+      color=nextcord.Color.from_rgb(255, 195, 0),
+      description=f"""The {battletag}'s profile it's setted private.
+        Please consider making your profile public if you're the account owner. 
+        Options > Social > Career Profile Visibility :unlock:""",
+      timestamp=datetime.utcnow()
+    )
+
+    embed_notfound = nextcord.Embed(
+      color=nextcord.Color.from_rgb(255, 195, 0),
+      description=f'User {battletag} not found, please try again!'
+    )
+    
     if status_code == 404:
-      return await interaction.response.send_message(f'{author}\nUser {battletag} not found, please try again!')
+      return await interaction.response.send_message(content=author, embeds=[embed_notfound])
+    if data['private']:
+      return await interaction.response.send_message(content=author, embeds=[embed_private])
   
     competitive_stats = data['competitiveStats']
     matchs = competitive_stats['games']
