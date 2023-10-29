@@ -1,4 +1,5 @@
 import requests
+from exceptions import battlenet
 
 class OverwatchService:
   def __sanitize_battletag(self, battletag: str):
@@ -10,4 +11,12 @@ class OverwatchService:
     sanitized_battletag = self.__sanitize_battletag(battletag)
     response = requests.get(f'https://ow-api.com/v1/stats/{platform}/us/{sanitized_battletag}/profile')
 
-    return response.status_code, response.json()
+    data = response.json()
+
+    if response.status_code == 404:
+      raise battlenet.ProfileNotFound()
+
+    if data['private']:
+      raise battlenet.ProfilePrivate()
+
+    return data

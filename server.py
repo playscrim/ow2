@@ -9,8 +9,6 @@ from oauth.battlenet import BattleNetOAuth
 app = Flask(__name__)
 config = dotenv_values('.env')
 
-"""Dependency Injection
-"""
 oauth = BattleNetOAuth(
   config['CLIENT_ID'], 
   config['CLIENT_SECRET']
@@ -31,21 +29,29 @@ def index():
 def get_user_by_id(user_id):
   return user_service.find_one(user_id)
 
-@app.route('/callback')
-def callback():
-  allow_code = request.args.get('code')
-  user_id = request.args.get('state')
+@app.route('/user/register', methods=['POST'])
+def register_user():
+  """Endpoint to register user
+  ---
+  responses:
+    200:
+      description: User created successfully
+  """
+  request_data = request.get_json()
+
+  user_id = request_data['user_id']
+  allow_code = request_data['allow_code']
 
   access_token = oauth.get_access_token(allow_code)
   battletag = oauth.get_user_info(access_token)
 
-  dto = {
+  user_dto = {
     'battletag': battletag,
     'allow_code': allow_code,
-    'user_id': int(user_id)
+    'user_id': user_id
   }
 
-  return user_service.create_user(dto).model_dump_json()
+  return user_service.create_user(user_dto).model_dump_json()
 
 if __name__ == '__main__':
   app.run('0.0.0.0', 8000, debug=True)
