@@ -1,3 +1,24 @@
+<p align="center">
+  <a href="https://github.com/playscrim/ow2" target="blank">
+    <img src="https://images.blz-contentstack.com/v3/assets/blt321317473c90505c/blt8e91198b8a92ac17/643073312d91476d41e46748/OWL_Tracer_02.png" width="120" alt="Logo" />
+  </a>
+</p>
+
+<p align="center">
+  <p align="center">
+   Unlock the enhanced competitive experience.
+  </p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/playscrim/ow2" target="_blank">
+    <img src="https://img.shields.io/github/stars/playscrim/ow2" alt="Stargazers" />
+  </a>
+  <a href="https://github.com/playscrim/ow2" target="_blank">
+    <img src="https://img.shields.io/github/issues/playscrim/ow2" alt="Issues" />
+  </a>
+</p>
+
 ## Description
 Playscrim is an open source project for efficient [Overwatch 2](https://playoverwatch.com) scrims organization. It uses modern Python and combines elements of OOP (Object Oriented Programming).
 
