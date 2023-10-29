@@ -31,7 +31,7 @@ def index():
 def get_user_by_id(user_id):
   return user_service.find_one(user_id)
 
-@app.route('/callback')
+@app.route('/user/register', methods=['POST'])
 def callback():
   allow_code = request.args.get('code')
   user_id = request.args.get('state')

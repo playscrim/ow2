@@ -29,16 +29,16 @@ class Verification(commands.Cog):
 
   @nextcord.slash_command(name='verify', description='Verify user')
   async def verify_user(self, interaction: Interaction):
-    login_btn = LoginButton()
+    login_button = LoginButton()
 
-    embed = nextcord.Embed(
+    verify_embed = nextcord.Embed(
       description='We need to verify your battle.net account', 
       color=nextcord.Colour.blurple()
     )
 
     await interaction.response.send_message(
-      embeds=[embed],
-      view=login_btn
+      embeds=[verify_embed],
+      view=login_button
     )
 
 def setup(client):
