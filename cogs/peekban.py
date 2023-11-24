@@ -32,11 +32,27 @@ class MapSelect(nextcord.ui.Select):
       return x['screenshot'] != self.values[0]
     
     map_pool = list(filter(cb_filter, self.__map_pool))
+    async def arrayValidation(arr):
+        arr = map_pool
+        if len(arr) == 1:
+            chosen_map = arr[0]
+            await interaction.response.send_message(
+              f"The map chosen is '{chosen_map['name']}', here's a screenshot: {chosen_map['screenshot']}"
+            )
+        else:
+            pass
+        x = len(arr) == 1
+        return x
+        
+    res = await arrayValidation(map_pool)
+    print(res)
 
     await interaction.response.send_message(
       f'You banned {self.values[0]}', 
       view=View(MapSelect, map_pool)
     )
+
+    
 
 class Peekban(commands.Cog):
   def __init__(self, client):
